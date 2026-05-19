@@ -1,5 +1,5 @@
 from datasets import load_dataset
-from flask import Flask
+from flask import Flask, jsonify
 import duckdb
 import os
 
@@ -10,23 +10,37 @@ dataset = load_dataset(
     split="train"
 )
 
-table = dataset.data.table
-duckdb.register("train", table)
+duckdb.register("train", dataset.data.table)
 
 HTML = """
 <!doctype html>
 <html>
 <body style="padding: 40px;">
 
-<div style="display: grid; grid-template-columns: auto 2fr; gap: 8px 24px; font-size: 2rem;">
-    {{ rows }}
+<div id="poem"
+     style="display: grid; grid-template-columns: auto 2fr; gap: 8px 24px; font-size: 2rem;">
 </div>
 
-<form method="get" style="margin-top: 30px;">
-    <button type="submit" style="font-size: 2rem;">
-        New Quatrain
-    </button>
-</form>
+<button onclick="loadStanza()"
+        style="font-size: 2rem; margin-top: 30px;">
+    New Stanza
+</button>
+
+<script>
+async function loadStanza() {
+    const response = await fetch("/stanza");
+    const data = await response.json();
+
+    const poem = document.getElementById("poem");
+
+    poem.innerHTML = data.rows.map(row => `
+        <div>${row.line}</div>
+        <div style="color: gray;">${row.gid}</div>
+    `).join("");
+}
+
+loadStanza();
+</script>
 
 </body>
 </html>
@@ -34,6 +48,10 @@ HTML = """
 
 @app.route("/")
 def index():
+    return HTML
+
+@app.route("/stanza")
+def stanza():
     results = duckdb.sql("""
         SELECT *
         FROM train
@@ -41,18 +59,15 @@ def index():
         LIMIT 4
     """).fetchall()
 
-    rows_html = ""
-
-    for row in results:
-        line = row[0]
-        gid = row[1]
-
-        rows_html += f"""
-        <div>{line}</div>
-        <div style="color: gray;">{gid}</div>
-        """
-
-    return HTML.replace("{{ rows }}", rows_html)
+    return jsonify({
+        "rows": [
+            {
+                "line": row[0],
+                "gid": row[1]
+            }
+            for row in results
+        ]
+    })
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
