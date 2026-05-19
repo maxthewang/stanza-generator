@@ -10,9 +10,8 @@ dataset = load_dataset(
     split="train"
 )
 
-df = dataset.to_pandas()
-
-duckdb.register("train", df)
+table = dataset.data.table
+duckdb.register("train", table)
 
 HTML = """
 <!doctype html>

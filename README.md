@@ -1,2 +1,2 @@
-# stanza-generator
-Webpage that presents a stanza of randomly selected lines from a dataset of poetry.
+# Stanza Generator
+Generate a new quatrain formed by lines sampled from the Gutenberg Poetry Corpus.
