@@ -1,5 +1,5 @@
 from datasets import load_dataset
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template
 import duckdb
 import os
 
@@ -12,43 +12,9 @@ dataset = load_dataset(
 
 duckdb.register("train", dataset.data.table)
 
-HTML = """
-<!doctype html>
-<html>
-<body style="padding: 40px;">
-
-<div id="poem"
-     style="display: grid; grid-template-columns: auto 2fr; gap: 8px 24px; font-size: 2rem;">
-</div>
-
-<button onclick="loadStanza()"
-        style="font-size: 2rem; margin-top: 30px;">
-    New Stanza
-</button>
-
-<script>
-async function loadStanza() {
-    const response = await fetch("/stanza");
-    const data = await response.json();
-
-    const poem = document.getElementById("poem");
-
-    poem.innerHTML = data.rows.map(row => `
-        <div>${row.line}</div>
-        <div style="color: gray;">${row.gid}</div>
-    `).join("");
-}
-
-loadStanza();
-</script>
-
-</body>
-</html>
-"""
-
 @app.route("/")
 def index():
-    return HTML
+    return render_template("index.html")
 
 @app.route("/stanza")
 def stanza():

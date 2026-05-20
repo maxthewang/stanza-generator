@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+    <head></head>
+<body style="padding: 40px;">
+
+<div id="poem"
+     style="display: grid; grid-template-columns: auto 2fr; gap: 8px 24px; font-size: 2rem;">
+</div>
+
+<div style="margin-top: 30px;">
+    <button onclick="loadStanza()" style="font-size: 2rem;">
+        New Stanza
+    </button>
+
+    <button onclick="copyPoem()" style="font-size: 2rem; margin-left: 12px;">
+        Copy
+    </button>
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>
