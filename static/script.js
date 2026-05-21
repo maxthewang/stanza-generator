@@ -1,21 +1,40 @@
-let currentPoem = "";
+let stanzaData = {};
 
 async function loadStanza() {
-    const response = await fetch("/stanza");
-    const data = await response.json();
+	const status = document.getElementById("status");
 
-    currentPoem = data.rows.map(row => row.line).join("\n");
+	status.textContent = "Loading...";
 
-    const poem = document.getElementById("poem");
+	try {
+		const response = await fetch("/stanza");
 
-    poem.innerHTML = data.rows.map(row => `
-        <div>${row.line}</div>
-        <div style="color: gray;">${row.gid}</div>
-    `).join("");
+		if (!response.ok) {
+			throw new Error("Server error");
+		}
+
+		const data = await response.json();
+		stanzaData = data;
+
+		const poem = document.getElementById("poem");
+		poem.innerHTML = data.rows
+			.map(
+				(row) => `
+            <div>${row.line}</div>
+            <div style="color: gray;">${row.gid}</div>
+        `,
+			)
+			.join("");
+
+		status.textContent = "";
+	} catch (error) {
+		status.textContent = "Query failed. Refresh the page.";
+	}
 }
 
 async function copyPoem() {
-    await navigator.clipboard.writeText(currentPoem);
+	await navigator.clipboard.writeText(
+		stanzaData.rows.map((row) => row.line).join("\n"),
+	);
 }
 
 loadStanza();
